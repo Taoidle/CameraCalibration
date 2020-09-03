@@ -19,7 +19,6 @@ import numpy as np
 
 
 class CameraCalibration:
-
     """
         相机标定：
             可用函数：calibration_init(self, width, height, pic_path, save_parameters=True)
@@ -81,7 +80,6 @@ class CameraCalibration:
 
 
 class CameraCorrect:
-
     """
         相机矫正：
             使用说明：在调用该类作相机矫正前请先调用相机标定保存矩阵参数和畸变系数
@@ -91,6 +89,7 @@ class CameraCorrect:
             函数说明：用于图片的畸变矫正
             参数说明：origin_path 为原图路径 例："./pic/demo_1.png"
                     target_path 为输出目录路径 例："./output_pic/"
+                    return_img  为是否返回图像，True直接返回，False则按路径写出图像
                     file_name   为输出文件名 例："pic_cor"
                     file_format 为文件格式 例："png"
 
@@ -126,13 +125,27 @@ class CameraCorrect:
                 self.dist = np.array(json_data["dist"])
 
     # 图片畸变校准
-    def correct_pic(self, origin_path: str, target_path: str = "./", file_name: str = "cor_pic",
+    def correct_pic(self, origin_or_path, return_img=True, target_path: str = "./", file_name: str = "cor_pic",
                     file_format: str = "png"):
-        img = cv2.imread(origin_path)
+        if isinstance(origin_or_path, str) and os.path.exists(origin_or_path):
+            img = cv2.imread(origin_or_path)
+            return self.__correct_pic(img, return_img, target_path, file_name, file_format)
+        elif isinstance(origin_or_path, np.ndarray):
+            img = origin_or_path
+            return self.__correct_pic(img, return_img, target_path, file_name, file_format)
+        else:
+            print("correct_pic error: 请检查输入参数是否是正确路径或图像\n")
+            exit(1)
+
+    def __correct_pic(self, img, return_img, target_path, file_name, file_format):
         pic_height, pic_width = img.shape[:2]
         file_format = self.__calibration_pic_format(file_format.lower())
-        cv2.imwrite(target_path + file_name + "." + file_format,
-                    self.__distortion_correction(img, pic_width, pic_height))
+        if return_img:
+            return self.__distortion_correction(img, pic_width, pic_height)
+        else:
+            img_cor = self.__distortion_correction(img, pic_width, pic_height)
+            cv2.imwrite(target_path + file_name + "." + file_format, img_cor)
+            return img_cor
 
     # 视频畸变校准(直接输出视频)
     def correct_vid2vid(self, origin_path: str, target_path: str = "./", file_name: str = "cor_vid",
@@ -236,9 +249,10 @@ class CameraCorrect:
 
 
 if __name__ == '__main__':
-    cal = CameraCalibration()
-    cal.calibration_init(9, 6, "./pic/*.jpg")
+    # cal = CameraCalibration()
+    # cal.calibration_init(9, 6, "./pic/*.jpg")
     cor = CameraCorrect()
-    cor.correct_pic("./pic/cm_flag_5.jpg", "./output_pic/")
-    cor.correct_vid2vid("./vid/vid_demo_1.mp4", "./output_vid/")
-    cor.correct_vid2pic("./vid/vid_demo_1.mp4", "./output_vid/")
+    # cv2.imshow("cor", cor.correct_pic("./pic/cm_flag_5.jpg"))
+    # cor.correct_vid2vid("./vid/vid_demo_1.mp4", "./output_vid/")
+    # cor.correct_vid2pic("./vid/vid_demo_1.mp4", "./output_vid/")
+    # cv2.waitKey(0)
