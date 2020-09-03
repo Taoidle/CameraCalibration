@@ -20,6 +20,15 @@ import numpy as np
 
 class CameraCalibration:
 
+    """
+        相机标定：
+            可用函数：calibration_init(self, width, height, pic_path, save_parameters=True)
+            参数说明：
+                    width height    为黑白棋盘格大小
+                    pic_path        为标定图路径 例："./pic/*.jpg"
+                    save_parameters 为保存参数系数，True则保存为parameters.json， False直接打印出参数系数
+    """
+
     def calibration_init(self, width, height, pic_path, save_parameters=True):
         # 亚像素角点的参数
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
@@ -72,6 +81,36 @@ class CameraCalibration:
 
 
 class CameraCorrect:
+
+    """
+        相机矫正：
+            使用说明：在调用该类作相机矫正前请先调用相机标定保存矩阵参数和畸变系数
+
+            可用函数：correct_pic(self, origin_path: str, target_path: str = "./", file_name: str = "cor_pic",
+                    file_format: str = "png")
+            函数说明：用于图片的畸变矫正
+            参数说明：origin_path 为原图路径 例："./pic/demo_1.png"
+                    target_path 为输出目录路径 例："./output_pic/"
+                    file_name   为输出文件名 例："pic_cor"
+                    file_format 为文件格式 例："png"
+
+            可用函数：correct_vid2vid(self, origin_path: str, target_path: str = "./", file_name: str = "cor_vid",
+                        file_format: str = "mp4", file_coding: str = "mp4v")
+            函数说明：用于视频直接矫正并得到校正后视频
+            参数说明：origin_path 为原视频路径 例："./vid/demo_1.mp4"
+                    target_path 为输出目录路径 例："./output_vid/"
+                    file_name   为输出文件名 例："vid_cor"
+                    file_format 为文件格式   例："mp4"
+                    file_coding 为文件编码   例：mp4格式对应编码为"mp4v"
+
+            可用函数：correct_vid2pic(self, origin_path: str, target_path: str = "./", file_name: str = "cor_pic",
+                        file_format: str = "png")
+            函数说明：用于视频抽取矫正后的所有帧图像
+            参数说明：origin_path 为原视频路径 例："./vid/demo_1.mp4"
+                    target_path 为输出目录路径 例："./output_vid/"
+                    file_name   为输出文件名 例："pic_cor"
+                    file_format 为文件格式 例："png"
+    """
 
     def __init__(self):
         self.__correct_init()
